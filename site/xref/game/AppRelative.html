@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="" lang="">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>AppRelative xref</title>
+<link type="text/css" rel="stylesheet" href="../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../apidocs/game/AppRelative.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <em class="jxr_comment">//TODO the following is not really valid anymore.</em>
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   <em class="jxr_comment">// I now do similar to https://github.com/wangdapang77/Java8-Source-Code/blob/master/src/main/jdk8/java/net/JarURLConnection.java</em>
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <em class="jxr_comment">// and https://stackoverflow.com/questions/402683/how-do-i-get-just-the-jar-url-from-a-jar-url-containing-a-and-a-specific-fi/9189036#9189036</em>
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <em class="jxr_comment">// // TODO do the values this works with work on windows?</em>
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <em class="jxr_comment">// // I explicitly avoid naive string manipulation, so they should.</em>
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <em class="jxr_comment">// TODO this is currently a bit wrong, because it used to be part of Main.</em>
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <em class="jxr_comment">// Since it's factored out, it's not strictly a path to the entry point,</em>
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <em class="jxr_comment">// but Main and AppRelative are in the same package so it should be fine.</em>
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">package</strong> game;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> lombok.SneakyThrows;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> lombok.extern.slf4j.Slf4j;
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> java.net.URI;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> java.nio.file.Path;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_comment">// This class is final because: see the noted trick in entrypointLocation()</em>
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  @Slf4j
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">class</strong> <a name="AppRelative" href="../game/AppRelative.html#AppRelative">AppRelative</a> {
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>    <em class="jxr_comment">// Partially based off of https://www.baeldung.com/java-full-path-of-jar-from-class</em>
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>    <em class="jxr_comment">// TODO the supressed URISyntaxException should be impossible?</em>
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>    @SneakyThrows
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> URI entrypointLocation() {
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>      <em class="jxr_comment">// Trick from https://stackoverflow.com/questions/8275499/how-to-call-getclass-from-a-static-method-in-java/17397548#17397548</em>
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>      Class clazz = <strong class="jxr_keyword">new</strong> Object() { }.getClass().getEnclosingClass();
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>      <strong class="jxr_keyword">var</strong> logDir = clazz.getResource(clazz.getSimpleName() + <span class="jxr_string">".class"</span>).toURI();
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>      <strong class="jxr_keyword">return</strong> logDir;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>    }
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>    @SneakyThrows
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> Path logDir() {
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>      <em class="jxr_comment">// TODO this is not exactly reliable, there are a lot of variations</em>
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>      <em class="jxr_comment">// where this might not make sense, but as it is, it works for us.</em>
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>      <em class="jxr_comment">// NOTE this uses the path of the class or the JAR depending on what is being run.</em>
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>      <strong class="jxr_keyword">var</strong> path = entrypointLocation();
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>      <em class="jxr_comment">// TODO Technically entrypointLocation can be anywhere,</em>
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>      <em class="jxr_comment">// but we assume it's a local path we can write to, so assert that?</em>
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>      <em class="jxr_comment">// TODO NOTE JDK has two kinds of filesystems per the following, so this should be exhaustive.</em>
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>      <em class="jxr_comment">// https://stackoverflow.com/questions/32873899/converting-a-jar-uri-into-a-nio-path/32874771#32874771</em>
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>      <em class="jxr_comment">// TODO this meanwhile talks about URI spec violation https://stackoverflow.com/questions/9530549/why-contextclassloader-returns-path-with-exclamation-character/9530744#9530744</em>
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>      <strong class="jxr_keyword">if</strong>(path.getScheme().equals(<span class="jxr_string">"jar"</span>)) {
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>        path = <strong class="jxr_keyword">new</strong> URI(<span class="jxr_string">"file"</span>, <strong class="jxr_keyword">new</strong> URI(path.getSchemeSpecificPart()).getPath().split(<span class="jxr_string">"!/"</span>)[0],<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>        System.out.println(path.toString());
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>      }
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>      <strong class="jxr_keyword">var</strong> logDir = Path.of(path).getParent();
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>      <em class="jxr_comment">//TODO As usual, I'm an idiot. This is called too early and this is probably what leads to the log4j ordering mess.</em>
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>      <em class="jxr_comment">//log.trace("entrypointLocation: {}", path.toString());</em>
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>      <strong class="jxr_keyword">return</strong> logDir;
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>    }
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  }
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2023. All rights reserved.</div>
+</body>
+</html>
