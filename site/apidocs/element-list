@@ -1,2 +1,6 @@
 game
 game.ui
+game.ui.D3
+game.ui.scenes
+game.ui.util
+game.ui.util.D3

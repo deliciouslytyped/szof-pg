@@ -13,30 +13,51 @@
 <a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> game.AppRelative;
 <a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> lombok.extern.slf4j.Slf4j;
 <a class="jxr_linenumber" name="L7" href="#L7">7</a>   
-<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <em class="jxr_comment">// TODO: any specific reason this is final in examples?</em>
-<a class="jxr_linenumber" name="L9" href="#L9">9</a>   @Slf4j
-<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="Main" href="../game/Main.html#Main">Main</a> {
-<a class="jxr_linenumber" name="L11" href="#L11">11</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> String logSetting = <span class="jxr_string">"app.logPath"</span>;
-<a class="jxr_linenumber" name="L12" href="#L12">12</a>  
-<a class="jxr_linenumber" name="L13" href="#L13">13</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setLogPath() {
-<a class="jxr_linenumber" name="L14" href="#L14">14</a>      <em class="jxr_comment">// Used to set the Log4j log file location next to the entrypoint.</em>
-<a class="jxr_linenumber" name="L15" href="#L15">15</a>      <strong class="jxr_keyword">var</strong> loc = AppRelative.logDir().toString();
-<a class="jxr_linenumber" name="L16" href="#L16">16</a>      <em class="jxr_comment">// See log4j2.xml for how we make this work.</em>
-<a class="jxr_linenumber" name="L17" href="#L17">17</a>      System.setProperty(logSetting, loc);
-<a class="jxr_linenumber" name="L18" href="#L18">18</a>      log.trace(<span class="jxr_string">"{}: {}"</span>, logSetting, loc);
-<a class="jxr_linenumber" name="L19" href="#L19">19</a>    }
-<a class="jxr_linenumber" name="L20" href="#L20">20</a>  
-<a class="jxr_linenumber" name="L21" href="#L21">21</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> main(String[] args) {
-<a class="jxr_linenumber" name="L22" href="#L22">22</a>      <em class="jxr_comment">// See the developer notes.</em>
-<a class="jxr_linenumber" name="L23" href="#L23">23</a>      System.setProperty(<span class="jxr_string">"prism.forceGPU"</span>, <span class="jxr_string">"true"</span>);
-<a class="jxr_linenumber" name="L24" href="#L24">24</a>      setLogPath();
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>      <em class="jxr_comment">// The cast is needed to prevent the varargs from eating the rest of the array</em>
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>      <em class="jxr_comment">// https://stackoverflow.com/questions/39589879/printing-an-array-with-slf4j-only-prints-the-first-element</em>
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>      log.trace(<span class="jxr_string">"args: {}"</span>, (Object)args);
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>      log.trace(<span class="jxr_string">"sysprops: {}"</span>, System.getProperties());
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>      Application.launch(GameApplication.<strong class="jxr_keyword">class</strong>, args);
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>    }
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>  }
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> lombok.SneakyThrows;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> lombok.extern.slf4j.Slf4j;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> java.net.URI;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> java.nio.file.Path;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_comment">// TODO: any specific reason this is final in examples?</em>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  @Slf4j
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="Main" href="../game/Main.html#Main">Main</a> {
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>    <em class="jxr_comment">// Partially based off of https://www.baeldung.com/java-full-path-of-jar-from-class</em>
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>    <em class="jxr_comment">// This is used by the AppRelative class.</em>
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>    <em class="jxr_comment">// TODO the supressed URISyntaxException should be impossible?</em>
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>    @SneakyThrows
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> URI entrypointLocation() {
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>      <em class="jxr_comment">// Trick from https://stackoverflow.com/questions/8275499/how-to-call-getclass-from-a-static-method-in-java/17397548#17397548</em>
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>      Class clazz = <strong class="jxr_keyword">new</strong> Object() { }.getClass().getEnclosingClass();
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>      <strong class="jxr_keyword">var</strong> logDir = clazz.getResource(clazz.getSimpleName() + <span class="jxr_string">".class"</span>).toURI();
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>      <strong class="jxr_keyword">return</strong> logDir;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>    }
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setLogPath() {
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>      <em class="jxr_comment">// Used to set the Log4j log file location next to the entrypoint.</em>
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>      <strong class="jxr_keyword">var</strong> loc = AppRelative.logDir().toString();
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>      <em class="jxr_comment">// See log4j2.xml for how we make this work.</em>
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>      System.setProperty(Settings.LogSetting, loc);
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>      log.trace(<span class="jxr_string">"{}: {}"</span>, Settings.LogSetting, loc);
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>    }
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> forceGPU(){
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>      <em class="jxr_comment">// See the developer notes.</em>
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>      System.setProperty(<span class="jxr_string">"prism.forceGPU"</span>, <span class="jxr_string">"true"</span>);
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>    }
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> main(String[] args) {
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>      forceGPU();
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>      setLogPath();
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>      <em class="jxr_comment">// The cast is needed to prevent the varargs from eating the rest of the array</em>
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>      <em class="jxr_comment">// https://stackoverflow.com/questions/39589879/printing-an-array-with-slf4j-only-prints-the-first-element</em>
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>      log.trace(<span class="jxr_string">"args: {}"</span>, (Object)args);
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>      log.trace(<span class="jxr_string">"sysprops: {}"</span>, System.getProperties());
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>      Application.launch(GameApplication.<strong class="jxr_keyword">class</strong>, args);
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>    }
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2023. All rights reserved.</div>
