@@ -1,4 +1,5 @@
 game
+game.model
 game.ui
 game.ui.D3
 game.ui.scenes
